@@ -1,0 +1,142 @@
+<div nz-row class="router-container">
+    <div class="h-container tree-container">
+        <nz-card class="tree-card">
+            <nz-tree #treeCom [nzData]="nodes" nzAsyncData="true" nzMultiple="true" (nzClick)="activateNode($event)" (nzExpandChange)="nzExpandChange($event)">
+                <ng-template #nzTreeTemplate let-node>
+                    <span class="custom-node" [class.active]="activatedNode?.key===node.key">
+                        <span *ngIf="!node.isLeaf">
+                            <i nz-icon [type]="node.isExpanded ? 'folder-open' : 'folder'" theme="outline"></i>
+                            <span class="folder-name">{{node.title}}</span>
+                        </span>
+                        <span *ngIf="node.isLeaf">
+                            <i nz-icon type="file"></i>
+                            <span class="file-name">{{node.title}}</span>
+                        </span>
+                    </span>
+                </ng-template>
+            </nz-tree>
+        </nz-card>
+    </div>
+    <div class="h-container tree-right-container">
+        <nz-card class="container-card">
+            <div style="margin-bottom: 16px;">
+                <button nz-button [nzType]="'primary'" (click)="addArea()">
+                    <i nz-icon type="plus" theme="outline"></i>
+                    添加区域
+                </button>
+            </div>
+            <nz-table #basicTable [nzData]="dataSet" nzSize="middle" [nzScroll]="{x: '1130px'}">
+                <thead>
+                <tr>
+                    <th nzWidth="16">区域名称</th>
+                    <th nzWidth="25">区域编码</th>
+                    <th nzWidth="25">区域描述</th>
+                    <th nzWidth="8">区域等级</th>
+                    <th nzWidth="8">排序</th>
+                    <th nzWidth="18%" nzRight="0px">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of basicTable.data">
+                    <td>{{ item.areaName }}</td>
+                    <td>{{ item.areaCode }}</td>
+                    <td>{{ item.areaDescription }}</td>
+                    <td>{{ item.areaLevel }}</td>
+                    <td>{{ item.areaSort }}</td>
+                    <td>
+                        <button nz-button [nzType]="'default'" (click)="updateArea(item)">
+                            <i nz-icon type="edit" theme="outline"></i>
+                            修改
+                        </button>
+                        <button nz-button [nzType]="'danger'" (click)="deleteArea(item)">
+                            <i nz-icon type="delete" theme="outline"></i>
+                            删除
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </nz-table>
+        </nz-card>
+    </div>
+</div>
+
+<!-- 区域 model -->
+<nz-modal [(nzVisible)]="modalVisible" nzWidth="480px" [nzTitle]="menuModalTitle" [nzContent]="menuModalContent" [nzFooter]="menuModalFooter" [nzClosable]="false">
+    <ng-template #menuModalTitle>
+        {{ modalTitle }}
+    </ng-template>
+    <ng-template #menuModalContent>
+        <form nz-form [formGroup]="areaForm">
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>上级区域</nz-form-label>
+                <nz-form-control nzSpan="14">
+                    <input nz-input [value]="activatedNode.title" [disabled]="true">
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>区域名称</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="areaName" placeholder="区域的显示名称">
+                    <nz-form-explain *ngIf="areaForm.get('areaName').dirty && (areaForm.get('areaName').invalid || areaForm.get('areaName').pending)">
+                        <ng-container *ngIf="areaForm.get('areaName').hasError('required')">
+                            请输入区域名称
+                        </ng-container>
+                        <ng-container *ngIf="areaForm.get('areaName').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>区域描述</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="areaDescription" placeholder="区域的相关描述信息等">
+                    <nz-form-explain *ngIf="areaForm.get('areaDescription').dirty && (areaForm.get('areaDescription').invalid || areaForm.get('areaDescription').pending)">
+                        <ng-container *ngIf="areaForm.get('areaDescription').hasError('required')">
+                            请输入区域描述
+                        </ng-container>
+                        <ng-container *ngIf="areaForm.get('areaDescription').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>区域编码</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="areaCode">
+                    <nz-form-explain *ngIf="areaForm.get('areaCode').dirty && (areaForm.get('areaCode').invalid || areaForm.get('areaCode').pending)">
+                        <ng-container *ngIf="areaForm.get('areaCode').hasError('required')">
+                            请输入区域编码
+                        </ng-container>
+                        <ng-container *ngIf="areaForm.get('areaCode').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>排序</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <nz-input-number formControlName="areaSort"></nz-input-number>
+                    <nz-form-explain *ngIf="areaForm.get('areaSort').dirty && (areaForm.get('areaSort').invalid || areaForm.get('areaSort').pending)">
+                        <ng-container *ngIf="areaForm.get('areaSort').hasError('required')">
+                            请输入序号
+                        </ng-container>
+                        <ng-container *ngIf="areaForm.get('areaSort').hasError('min')">
+                            序号不能小于10
+                        </ng-container>
+                        <ng-container *ngIf="areaForm.get('areaSort').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-template>
+    <ng-template #menuModalFooter>
+        <button *ngIf="modalType === enumModalType.Create" nz-button nzType="primary" [disabled]="!areaForm.valid" (click)="addAreaCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button *ngIf="modalType === enumModalType.Update" nz-button nzType="primary" [disabled]="!areaForm.valid" (click)="updateAreaCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button nz-button nzType="default" (click)="handleCancel()">取消</button>
+    </ng-template>
+</nz-modal>

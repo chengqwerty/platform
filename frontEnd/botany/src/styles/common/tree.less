@@ -1,0 +1,33 @@
+@import "../theme";
+
+.tree-container {
+    display: inline-block;
+    width: 300px;
+}
+.tree-card {
+    height: 100%;
+    margin-bottom: 0;
+}
+:host ::ng-deep .ant-tree {
+    overflow: hidden;
+    margin: 0 -24px;
+}
+
+:host ::ng-deep .ant-tree li {
+    padding: 8px 0 0 0;
+}
+
+.file-name, .folder-name {
+    margin-left: 4px;
+}
+.custom-node {
+    cursor: pointer;
+    line-height: 24px;
+    display: inline-block;
+    margin: 0 -1000px;
+    padding: 0 1000px;
+}
+.active {
+    background: @primary-color;
+    color: #fff;
+}

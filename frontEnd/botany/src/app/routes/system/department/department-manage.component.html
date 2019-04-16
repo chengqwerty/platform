@@ -1,0 +1,158 @@
+<div nz-row class="router-container">
+    <div class="h-container tree-container">
+        <nz-card class="tree-card">
+            <nz-tree #treeCom [nzData]="nodes" nzAsyncData="true" nzMultiple="true" (nzClick)="activateNode($event)" (nzExpandChange)="nzExpandChange($event)">
+                <ng-template #nzTreeTemplate let-node>
+                    <span class="custom-node" [class.active]="activatedNode?.key===node.key">
+                        <span *ngIf="!node.isLeaf">
+                            <i nz-icon [type]="node.isExpanded ? 'folder-open' : 'folder'" theme="outline"></i>
+                            <span class="folder-name">{{node.title}}</span>
+                        </span>
+                        <span *ngIf="node.isLeaf">
+                            <i nz-icon type="file"></i>
+                            <span class="file-name">{{node.title}}</span>
+                        </span>
+                    </span>
+                </ng-template>
+            </nz-tree>
+        </nz-card>
+    </div>
+    <div class="h-container tree-right-container">
+        <nz-card class="container-card">
+            <div style="margin-bottom: 16px;">
+                <button nz-button [nzType]="'primary'" (click)="addDepartment()">
+                    <i nz-icon type="plus" theme="outline"></i>
+                    添加机构
+                </button>
+            </div>
+            <nz-table #basicTable [nzData]="dataSet" nzSize="middle" [nzScroll]="{x: '1130px'}">
+                <thead>
+                <tr>
+                    <th nzWidth="16">机构名称</th>
+                    <th nzWidth="20">机构编码</th>
+                    <th nzWidth="10">所属区域</th>
+                    <th nzWidth="20">机构描述</th>
+                    <th nzWidth="8">机构等级</th>
+                    <th nzWidth="8">排序</th>
+                    <th nzWidth="18%" nzRight="0px">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of basicTable.data">
+                    <td>{{ item.departmentName }}</td>
+                    <td>{{ item.departmentCode }}</td>
+                    <td>{{ item.sysAreaBean.areaName }}</td>
+                    <td>{{ item.departmentDescription }}</td>
+                    <td>{{ item.departmentLevel }}</td>
+                    <td>{{ item.departmentSort }}</td>
+                    <td>
+                        <button nz-button [nzType]="'default'" (click)="updateDepartment(item)">
+                            <i nz-icon type="edit" theme="outline"></i>
+                            修改
+                        </button>
+                        <button nz-button [nzType]="'danger'" (click)="deleteDepartment(item)">
+                            <i nz-icon type="delete" theme="outline"></i>
+                            删除
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </nz-table>
+        </nz-card>
+    </div>
+</div>
+
+<!-- 机构 model -->
+<nz-modal [(nzVisible)]="modalVisible" nzWidth="480px" [nzTitle]="menuModalTitle" [nzContent]="menuModalContent" [nzFooter]="menuModalFooter" [nzClosable]="false">
+    <ng-template #menuModalTitle>
+        {{ modalTitle }}
+    </ng-template>
+    <ng-template #menuModalContent>
+        <form nz-form [formGroup]="departmentForm">
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>上级机构</nz-form-label>
+                <nz-form-control nzSpan="14">
+                    <input nz-input [value]="activatedNode.title" [disabled]="true">
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>机构名称</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="departmentName" placeholder="机构的显示名称">
+                    <nz-form-explain *ngIf="departmentForm.get('departmentName').dirty && (departmentForm.get('departmentName').invalid || departmentForm.get('departmentName').pending)">
+                        <ng-container *ngIf="departmentForm.get('departmentName').hasError('required')">
+                            请输入区域名称
+                        </ng-container>
+                        <ng-container *ngIf="departmentForm.get('departmentName').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>机构编码</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="departmentCode">
+                    <nz-form-explain *ngIf="departmentForm.get('departmentCode').dirty && (departmentForm.get('departmentCode').invalid || departmentForm.get('departmentCode').pending)">
+                        <ng-container *ngIf="departmentForm.get('departmentCode').hasError('required')">
+                            请输入区域编码
+                        </ng-container>
+                        <ng-container *ngIf="departmentForm.get('departmentCode').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>所属区域</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <area-select formControlName="areaId"></area-select>
+                    <nz-form-explain *ngIf="departmentForm.get('areaId').dirty && (departmentForm.get('areaId').invalid || departmentForm.get('areaId').pending)">
+                        <ng-container *ngIf="departmentForm.get('areaId').hasError('required')">
+                            请选择区域
+                        </ng-container>
+                        <ng-container *ngIf="departmentForm.get('areaId').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>机构描述</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="departmentDescription" placeholder="区域的相关描述信息等">
+                    <nz-form-explain *ngIf="departmentForm.get('departmentDescription').dirty && (departmentForm.get('departmentDescription').invalid || departmentForm.get('departmentDescription').pending)">
+                        <ng-container *ngIf="departmentForm.get('departmentDescription').hasError('required')">
+                            请输入区域描述
+                        </ng-container>
+                        <ng-container *ngIf="departmentForm.get('departmentDescription').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>排序</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <nz-input-number formControlName="departmentSort"></nz-input-number>
+                    <nz-form-explain *ngIf="departmentForm.get('departmentSort').dirty && (departmentForm.get('departmentSort').invalid || departmentForm.get('departmentSort').pending)">
+                        <ng-container *ngIf="departmentForm.get('departmentSort').hasError('required')">
+                            请输入序号
+                        </ng-container>
+                        <ng-container *ngIf="departmentForm.get('departmentSort').hasError('min')">
+                            序号不能小于10
+                        </ng-container>
+                        <ng-container *ngIf="departmentForm.get('departmentSort').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-template>
+    <ng-template #menuModalFooter>
+        <button *ngIf="modalType === enumModalType.Create" nz-button nzType="primary" [disabled]="!departmentForm.valid" (click)="addDepartmentCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button *ngIf="modalType === enumModalType.Update" nz-button nzType="primary" [disabled]="!departmentForm.valid" (click)="updateDepartmentCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button nz-button nzType="default" (click)="handleCancel()">取消</button>
+    </ng-template>
+</nz-modal>

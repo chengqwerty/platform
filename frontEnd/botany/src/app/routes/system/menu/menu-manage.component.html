@@ -1,0 +1,173 @@
+<div nz-row class="router-container">
+    <div class="h-container tree-container">
+        <nz-card class="tree-card">
+            <nz-tree #treeCom [nzData]="nodes" nzAsyncData="true" nzMultiple="true" (nzClick)="activeNode($event)" (nzExpandChange)="nzExpandChange($event)">
+                <ng-template #nzTreeTemplate let-node>
+                    <span class="custom-node" [class.active]="activatedNode?.key===node.key">
+                        <span *ngIf="!node.isLeaf">
+                            <i nz-icon [type]="node.isExpanded ? 'folder-open' : 'folder'" theme="outline"></i>
+                            <span class="folder-name">{{node.title}}</span>
+                        </span>
+                        <span *ngIf="node.isLeaf">
+                            <i nz-icon type="file"></i>
+                            <span class="file-name">{{node.title}}</span>
+                        </span>
+                    </span>
+                </ng-template>
+            </nz-tree>
+        </nz-card>
+    </div>
+    <div class="h-container tree-right-container">
+        <nz-card class="container-card">
+            <div style="margin-bottom: 16px;">
+                <button nz-button [nzType]="'primary'" (click)="addMenu()">
+                    <i nz-icon type="plus" theme="outline"></i>
+                    添加菜单
+                </button>
+            </div>
+            <nz-table #basicTable [nzData]="dataSet" nzSize="middle" [nzScroll]="{x: '1130px'}">
+                <thead>
+                <tr>
+                    <th nzWidth="13">菜单名称</th>
+                    <th nzWidth="5">菜单等级</th>
+                    <th nzWidth="5">排序</th>
+                    <th nzWidth="20">菜单描述</th>
+                    <th nzWidth="25">路由地址</th>
+                    <th nzWidth="6">是否可见</th>
+                    <th nzWidth="26%" nzRight="0px">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of basicTable.data">
+                    <td>{{ item.menuName }}</td>
+                    <td>{{ item.menuLevel }}</td>
+                    <td>{{ item.menuSort }}</td>
+                    <td>{{ item.menuDescription }}</td>
+                    <td>{{ item.menuViewPath }}</td>
+                    <td nzRight="0px">
+                        <ng-container *ngIf="item.menuVisible === '0'">
+                            <nz-switch [ngModel]="true" [nzControl]="true" (click)="clickSwitch(item)"></nz-switch>
+                        </ng-container>
+                        <ng-container *ngIf="item.menuVisible === '1'">
+                            <nz-switch [ngModel]="false" [nzControl]="true" (click)="clickSwitch(item)"></nz-switch>
+                        </ng-container>
+                    </td>
+                    <td>
+                        <button nz-button [nzType]="'primary'" (click)="lookMenu(item)">
+                            <i nz-icon type="zoom-in" theme="outline"></i>
+                            查看
+                        </button>
+                        <button nz-button [nzType]="'default'" (click)="updateMenu(item)">
+                            <i nz-icon type="edit" theme="outline"></i>
+                            修改
+                        </button>
+                        <button nz-button [nzType]="'danger'" (click)="deleteMenu(item)">
+                            <i nz-icon type="delete" theme="outline"></i>
+                            删除
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </nz-table>
+        </nz-card>
+    </div>
+</div>
+
+<!-- 菜单 model -->
+<nz-modal [(nzVisible)]="modalVisible" nzWidth="480px" [nzTitle]="menuModalTitle" [nzContent]="menuModalContent" [nzFooter]="menuModalFooter" [nzClosable]="false">
+    <ng-template #menuModalTitle>
+        {{ modalTitle }}
+    </ng-template>
+    <ng-template #menuModalContent>
+        <form nz-form [formGroup]="menuForm">
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>上级菜单</nz-form-label>
+                <nz-form-control nzSpan="14">
+                    <input nz-input [value]="activatedNode.title" placeholder="菜单的显示名称" [disabled]="true">
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>菜单名称</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="menuName" placeholder="菜单的显示名称">
+                    <nz-form-explain *ngIf="menuForm.get('menuName').dirty && (menuForm.get('menuName').invalid || menuForm.get('menuName').pending)">
+                        <ng-container *ngIf="menuForm.get('menuName').hasError('required')">
+                            请输入菜单名称
+                        </ng-container>
+                        <ng-container *ngIf="menuForm.get('menuName').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>菜单描述</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="menuDescription" placeholder="菜单的功能用途等">
+                    <nz-form-explain *ngIf="menuForm.get('menuDescription').dirty && (menuForm.get('menuDescription').invalid || menuForm.get('menuDescription').pending)">
+                        <ng-container *ngIf="menuForm.get('menuDescription').hasError('required')">
+                            请输入菜单描述
+                        </ng-container>
+                        <ng-container *ngIf="menuForm.get('menuDescription').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8">路由连接</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="menuViewPath">
+                    <nz-form-explain *ngIf="menuForm.get('menuViewPath').dirty && (menuForm.get('menuViewPath').invalid || menuForm.get('menuViewPath').pending)">
+                        <ng-container *ngIf="menuForm.get('menuViewPath').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>排序</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="menuSort" type="number">
+                    <nz-form-explain *ngIf="menuForm.get('menuSort').dirty && (menuForm.get('menuSort').invalid || menuForm.get('menuSort').pending)">
+                        <ng-container *ngIf="menuForm.get('menuSort').hasError('required')">
+                            请输入序号
+                        </ng-container>
+                        <ng-container *ngIf="menuForm.get('menuSort').hasError('min')">
+                            序号不能小于10
+                        </ng-container>
+                        <ng-container *ngIf="menuForm.get('menuSort').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>是否可见</nz-form-label>
+                <nz-form-control nzSpan="14">
+                    <nz-switch formControlName="menuVisibleStatus"></nz-switch>
+                    <nz-form-explain *ngIf="menuForm.get('menuVisibleStatus').dirty && (menuForm.get('menuVisibleStatus').invalid || menuForm.get('menuVisibleStatus').pending)">
+                        <ng-container *ngIf="menuForm.get('menuVisibleStatus').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8">菜单图标</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <ng-container *ngIf="menuIcon">
+                        <i nz-icon [type]="menuIcon" theme="outline"></i>
+                    </ng-container>
+                    <button nz-button nzType="primary" style="margin-left: 5px;" (click)="createIconModal()" [disabled]="modalType===enumModalType.Read">选择</button>
+                    <button nz-button nzType="dashed" (click)="deleteIcon()" [disabled]="modalType===enumModalType.Read">清除</button>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-template>
+    <ng-template #menuModalFooter>
+        <button *ngIf="modalType === enumModalType.Create" nz-button nzType="primary" [disabled]="!menuForm.valid" (click)="addMenuCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button *ngIf="modalType === enumModalType.Update" nz-button nzType="primary" [disabled]="!menuForm.valid" (click)="updateMenuCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button nz-button nzType="default" (click)="handleCancel()">取消</button>
+    </ng-template>
+</nz-modal>

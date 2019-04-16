@@ -1,0 +1,111 @@
+<div nz-row class="router-container">
+    <div class="h-container">
+        <nz-card class="container-card">
+            <div style="margin-bottom: 16px;">
+                <button nz-button [nzType]="'primary'" (click)="addUser()">
+                    <i nz-icon type="plus" theme="outline"></i>
+                    添加用户
+                </button>
+            </div>
+            <nz-table #basicTable [nzData]="dataSet" nzSize="middle" [nzScroll]="{x: '1130px'}">
+                <thead>
+                <tr>
+                    <th nzWidth="20%">登录名</th>
+                    <th nzWidth="20%">所属机构</th>
+                    <th nzWidth="20%">角色</th>
+                    <th nzWidth="20%">简介</th>
+                    <th nzWidth="20%" nzRight="0px">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of basicTable.data">
+                    <td>{{ item.loginName }}</td>
+                    <td>{{ item.departmentId | departmentPipe }}</td>
+                    <td>
+                        <ng-container *ngFor="let role of item.sysUserRoleBeanList">
+                            {{ role.roleId | rolePipe }},
+                        </ng-container>
+                    </td>
+                    <td>{{ item.userDescription }}</td>
+                    <td>
+                        <button nz-button [nzType]="'default'" (click)="updateUser(item)">
+                            <i nz-icon type="edit" theme="outline"></i>
+                            修改
+                        </button>
+                        <button nz-button [nzType]="'danger'" (click)="deleteUser(item)">
+                            <i nz-icon type="delete" theme="outline"></i>
+                            删除
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </nz-table>
+        </nz-card>
+    </div>
+</div>
+
+<!-- 用户 model -->
+<nz-modal [(nzVisible)]="modalVisible" nzWidth="480px" [nzTitle]="menuModalTitle" [nzContent]="menuModalContent" [nzFooter]="menuModalFooter" [nzClosable]="false">
+    <ng-template #menuModalTitle>
+        {{ modalTitle }}
+    </ng-template>
+    <ng-template #menuModalContent>
+        <form nz-form [formGroup]="userForm">
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>登录名</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="loginName" placeholder="用户的登录名">
+                    <nz-form-explain *ngIf="userForm.get('loginName').dirty && (userForm.get('loginName').invalid || userForm.get('loginName').pending)">
+                        <ng-container *ngIf="userForm.get('loginName').hasError('required')">
+                            请输入用户的登录名
+                        </ng-container>
+                        <ng-container *ngIf="userForm.get('loginName').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8">用户简介</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="userDescription">
+                    <nz-form-explain *ngIf="userForm.get('userDescription').dirty && (userForm.get('userDescription').invalid || userForm.get('userDescription').pending)">
+                        <ng-container *ngIf="userForm.get('userDescription').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>所属机构</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <department-select formControlName="departmentId"></department-select>
+                    <nz-form-explain *ngIf="userForm.get('departmentId').dirty && (userForm.get('departmentId').invalid || userForm.get('departmentId').pending)">
+                        <ng-container *ngIf="userForm.get('departmentId').hasError('required')">
+                            请选择机构
+                        </ng-container>
+                        <ng-container *ngIf="userForm.get('departmentId').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8">用户角色</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <role-select formControlName="roleIds"></role-select>
+                    <nz-form-explain *ngIf="userForm.get('roleIds').dirty && (userForm.get('roleIds').invalid || userForm.get('roleIds').pending)">
+                        <ng-container *ngIf="userForm.get('roleIds').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-template>
+    <ng-template #menuModalFooter>
+        <button *ngIf="modalType === enumModalType.Create" nz-button nzType="primary" [disabled]="!userForm.valid" (click)="addUserCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button *ngIf="modalType === enumModalType.Update" nz-button nzType="primary" [disabled]="!userForm.valid" (click)="updateUserCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button nz-button nzType="default" (click)="handleCancel()">取消</button>
+    </ng-template>
+</nz-modal>

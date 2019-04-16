@@ -1,0 +1,13 @@
+<div nz-row class="icon-container">
+    <ng-container *ngFor="let category of categoryNames; let i = index;">
+        <h3>{{ localeObj[category] }}</h3>
+        <ul class="anticons-list">
+            <li *ngFor="let icon of displayedNames[i].icons; trackBy: trackByFn" (click)="onIconClick($event, icon)" [class.icon-select]="icon === selectedIcon">
+                <i nz-icon [type]="icon" [theme]="currentTheme"></i>
+                <span class="anticon-class">
+                    <nz-badge>{{ icon }}</nz-badge>
+                </span>
+            </li>
+        </ul>
+    </ng-container>
+</div>

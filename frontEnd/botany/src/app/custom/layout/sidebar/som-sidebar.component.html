@@ -1,0 +1,59 @@
+<ng-template #reMenu let-i>
+    <ng-container *ngFor="let child of i">
+        <ul class="sidebar-nav sidebar-nav__depth{{child._depth}}" [class.sidebar-nav__sub]="child._depth > 0">
+            <li *ngIf="child._hidden !== true" routerLinkActive="sidebar-nav__selected" [routerLinkActiveOptions]="{exact: child.linkExact}"
+                class="sidebar-nav__item" [class.sidebar-nav__open]="child._open">
+                <!-- link -->
+                <a *ngIf="child._type === 1" (click)="onSelect(child)" [routerLink]="child.link" [target]="child.target"
+                   class="sidebar-nav__item-link">
+                    <ng-container *ngIf="!collapsed">
+                        <ng-template [ngTemplateOutlet]="icon" [ngTemplateOutletContext]="{$implicit: child.icon}"></ng-template>
+                    </ng-container>
+                    <nz-tooltip *ngIf="collapsed" nzPlacement="right" [nzTitle]="child.text">
+                        <span nz-tooltip>
+                            <ng-template [ngTemplateOutlet]="icon" [ngTemplateOutletContext]="{$implicit: child.icon}"></ng-template>
+                        </span>
+                    </nz-tooltip>
+                    <span class="sidebar-nav__item-text">{{ child.text }}</span>
+                </a>
+                <!-- external link -->
+                <a *ngIf="child._type === 2" href="{{ child.externalLink }}" target="{{child.target}}" data-type="external"
+                   class="sidebar-nav__item-link">
+                    <ng-container *ngIf="!collapsed">
+                        <ng-template [ngTemplateOutlet]="icon" [ngTemplateOutletContext]="{$implicit: child.icon}"></ng-template>
+                    </ng-container>
+                    <nz-tooltip *ngIf="collapsed" nzPlacement="right" [nzTitle]="child.text">
+                        <span nz-tooltip>
+                            <ng-template [ngTemplateOutlet]="icon" [ngTemplateOutletContext]="{$implicit: child.icon}"></ng-template>
+                        </span>
+                    </nz-tooltip>
+                    <span class="sidebar-nav__item-text">{{ child.text }}</span>
+                </a>
+                <!-- has children link -->
+                <a *ngIf="child._type === 3" (click)="toggleOpen(child)" (mouseenter)="showSubMenu($event, child)" class="sidebar-nav__item-link">
+                    <ng-template [ngTemplateOutlet]="icon" [ngTemplateOutletContext]="{$implicit: child.icon}"></ng-template>
+                    <span class="sidebar-nav__item-text">{{ child.text }}</span>
+                    <i class="sidebar-nav__sub-arrow"></i>
+                </a>
+                <!-- badge -->
+                <div *ngIf="child.badge" title="{{child.badge}}" class="badge badge-{{child.badgeStatus}}"
+                     [class.badge-dot]="child.badgeDot">
+                    <em>{{child.badge}}</em>
+                </div>
+                <ng-container *ngIf="child.children">
+                    <ng-template [ngTemplateOutlet]="reMenu" [ngTemplateOutletContext]="{$implicit: child.children}"></ng-template>
+                </ng-container>
+            </li>
+        </ul>
+    </ng-container>
+</ng-template>
+
+<ng-container *ngIf="list">
+    <ng-template [ngTemplateOutlet]="reMenu" [ngTemplateOutletContext]="{$implicit: list}"></ng-template>
+</ng-container>
+
+<ng-template #icon let-i>
+    <ng-container *ngIf="i" >
+        <i class="sidebar-nav__item-icon" nz-icon [type]="i.value" [theme]="i.theme" [spin]="i.spin" [twoToneColor]="i.twoToneColor" [iconfont]="i.iconfont"></i>
+    </ng-container>
+</ng-template>

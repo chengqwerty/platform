@@ -1,0 +1,125 @@
+<div nz-row class="router-container">
+    <div class="h-container">
+        <nz-card class="container-card">
+            <div style="margin-bottom: 16px;">
+                <button nz-button [nzType]="'primary'" (click)="addRole()">
+                    <i nz-icon type="plus" theme="outline"></i>
+                    添加角色
+                </button>
+            </div>
+            <nz-table #basicTable [nzData]="dataSet" nzSize="middle" [nzFrontPagination]="false" [nzHideOnSinglePage]="true" [nzTotal]="total" [nzScroll]="{x: '1130px'}"
+                      [(nzPageIndex)]="pageIndex" [(nzPageSize)]="pageSize" (nzPageIndexChange)="getTableData()" (nzPageSizeChange)="getTableData()">
+                <thead>
+                <tr>
+                    <th nzWidth="15%">角色名称</th>
+                    <th nzWidth="10%">排序</th>
+                    <th nzWidth="25%">角色描述</th>
+                    <th nzWidth="10%">创建人</th>
+                    <th nzWidth="10%">创建时间</th>
+                    <th nzWidth="10%">是否可用</th>
+                    <th nzWidth="20%" nzRight="0px">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of basicTable.data">
+                    <td>{{ item.roleName }}</td>
+                    <td>{{ item.roleSort }}</td>
+                    <td>{{ item.roleDescription }}</td>
+                    <td>{{ item.createUser }}</td>
+                    <td>{{ item.createTime | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                    <td nzRight="0px">
+                        <ng-container *ngIf="item.roleUsing === '0'">
+                            <nz-switch [ngModel]="true" [nzControl]="true" (click)="clickSwitch(item)"></nz-switch>
+                        </ng-container>
+                        <ng-container *ngIf="item.roleUsing === '1'">
+                            <nz-switch [ngModel]="false" [nzControl]="true" (click)="clickSwitch(item)"></nz-switch>
+                        </ng-container>
+                    </td>
+                    <td>
+                        <button nz-button [nzType]="'default'" (click)="updateRole(item)">
+                            <i nz-icon type="edit" theme="outline"></i>
+                            修改
+                        </button>
+                        <button nz-button [nzType]="'danger'" (click)="deleteRole(item)">
+                            <i nz-icon type="delete" theme="outline"></i>
+                            删除
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </nz-table>
+        </nz-card>
+    </div>
+</div>
+
+<!-- 菜单 model -->
+<nz-modal [nzVisible]="modalVisible" nzWidth="480px" [nzTitle]="roleModalTitle" [nzContent]="roleModalContent" [nzFooter]="roleModalFooter" [nzClosable]="false">
+    <ng-template #roleModalTitle>
+        {{ modalTitle }}
+    </ng-template>
+    <ng-template #roleModalContent>
+        <form nz-form [formGroup]="roleForm">
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>角色名称</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="roleName" placeholder="角色的显示名称">
+                    <nz-form-explain *ngIf="roleForm.get('roleName').dirty && (roleForm.get('roleName').invalid || roleForm.get('roleName').pending)">
+                        <ng-container *ngIf="roleForm.get('roleName').hasError('required')">
+                            请输入角色名称
+                        </ng-container>
+                        <ng-container *ngIf="roleForm.get('roleName').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>角色描述</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <input nz-input formControlName="roleDescription" placeholder="角色的用途等">
+                    <nz-form-explain *ngIf="roleForm.get('roleDescription').dirty && (roleForm.get('roleDescription').invalid || roleForm.get('roleDescription').pending)">
+                        <ng-container *ngIf="roleForm.get('roleDescription').hasError('required')">
+                            请输入角色描述
+                        </ng-container>
+                        <ng-container *ngIf="roleForm.get('roleDescription').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>排序</nz-form-label>
+                <nz-form-control nzSpan="14" nzHasFeedback>
+                    <nz-input-number formControlName="roleSort"></nz-input-number>
+                    <nz-form-explain *ngIf="roleForm.get('roleSort').dirty && (roleForm.get('roleSort').invalid || roleForm.get('roleSort').pending)">
+                        <ng-container *ngIf="roleForm.get('roleSort').hasError('required')">
+                            请输入序号
+                        </ng-container>
+                        <ng-container *ngIf="roleForm.get('roleSort').hasError('min')">
+                            序号不能小于10
+                        </ng-container>
+                        <ng-container *ngIf="roleForm.get('roleSort').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzSpan="8" nzRequired>是否可用</nz-form-label>
+                <nz-form-control nzSpan="14">
+                    <nz-switch formControlName="roleUsingStatus"></nz-switch>
+                    <nz-form-explain *ngIf="roleForm.get('roleUsingStatus').dirty && (roleForm.get('roleUsingStatus').invalid || roleForm.get('roleUsingStatus').pending)">
+                        <ng-container *ngIf="roleForm.get('roleUsingStatus').pending">
+                            正在验证
+                        </ng-container>
+                    </nz-form-explain>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-template>
+    <ng-template #roleModalFooter>
+        <button *ngIf="modalType === enumModalType.Create" nz-button nzType="primary" [disabled]="!roleForm.valid" (click)="addRoleCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button *ngIf="modalType === enumModalType.Update" nz-button nzType="primary" [disabled]="!roleForm.valid" (click)="updateRoleCommit()" [nzLoading]="isButtonLoading">确认</button>
+        <button nz-button nzType="default" (click)="handleCancel()">取消</button>
+    </ng-template>
+</nz-modal>
